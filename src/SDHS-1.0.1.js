@@ -60,12 +60,14 @@
     // TEEval 模板引擎
     _Z. TEEval = function (tpl, data) {
         tpl = tpl.replace(/^\s+|\s+$/gm, '').replace(/\r\n/g, '').replace(/\n/g, '').replace(/\r/g, '').replace(/(&lt;)/g, '<').replace(/(&amp;)/g, '&').replace(/(&gt;)/g, '>');
-        var t, fn = '(function(){var T = \'\'',
+        var t, fn = '(function(){ var $reg = RegExp(/null|undefined/i);var T = \'\'',
             tpls = tpl.split('<nb>');
         for ( t in tpls ) {
             var p = tpls[t].split('</nb>');
             if (t !== '0') {
-                fn += '=' === p[0].charAt(0) ? '+' + p[0].substr(1) : ';' + p[0] + 'T=T';
+                fn += '=' === p[0].charAt(0)
+                    ? '+($reg.test(typeof(' + p[0].substr(1) + ')) ? \'\' : ' + p[0].substr(1) + ' ) '
+                    : ';' + p[0] + 'T=T';
             }
             fn += '+\'' + p[ p.length - 1 ] + '\'';
         }
@@ -295,31 +297,33 @@
     _Z. JSONTool = {
 
         formGetData: function (form, param) {
-            var request = {
-                token: sessionStorage['token'] || ''
-            };
-            if ( !form ) return request;
+           var request = {};
+           if ( !form ) return request;
 
-            var _input = form.find('input') || [],
-                k, i = 0;
-            for ( ; i < _input.length; i ++ ) {
-                request[_input[i].name] = _input[i].value;
-            }
-            if( param && typeof param === 'object') {
-                for ( k in param ) {
-                    request[k] = param[k];
-                }
-            }
-            if( param && $(param).length === 1 ) {
-                var __form = $(param),
-                    __input = __form.find('input') || [];
+           var _input = form.find('input') || [],
+               k, val, name, i = 0;
+           for ( ; i < _input.length; i++ ) {
+               name = _input[i].name;
+               val = _input[i].value;
+               if ( name && val ) {
+                   request[ name ] = val;
+               }
+           }
+           if( param && typeof param === 'object') {
+               for ( k in param ) {
+                   request[k] = param[k];
+               }
+           }
+           if( param && $(param).length === 1 ) {
+               var __form = $(param),
+                   __input = __form.find('input') || [];
 
-                var j = 0;
-                for ( ; j < __input.length; j ++) {
-                    request[__input[j].name] = __input[j].value;
-                }
-            }
-            return request;
+               var j = 0;
+               for ( ; j < __input.length; j ++) {
+                   request[__input[j].name] = __input[j].value;
+               }
+           }
+           return request;
         },
 
         length: function ( obj ) {
@@ -452,10 +456,9 @@
         },
 
         isEmptyForm: function ( form, btn ){
-            if ( form.length !== 1 ) return null;
+            if ( !form || form.length !== 1 ) return null;
 
             var empty = false,
-                isBtnMode = btn.length > 0 ? true : null,
                 $input = form.find('input[type=\'text\'], input[type=\'hidden\'], input[type=\'password\'], input[type=\'number\'], textarea'),
                 $radio = form.find('input[type=\'radio\']'),
                 $select = form.find('select'),
@@ -478,36 +481,35 @@
             });
 
             if( empty ){
-                return isBtnMode ? btn.addClass('disabled') : empty;
+                return btn ? btn.addClass('disabled') : empty;
             }
 
             if ( $select.length !== 0 ) {
                 if ( form.find('select option:selected').length < splitInput( $select ) ) {
-                    return isBtnMode ? btn.addClass('disabled') : true;
+                    return btn ? btn.addClass('disabled') : true;
                 }
             }
 
             if ( $radio.length !== 0 ) {
                 if ( form.find('input[type=\'radio\']:checked').length < splitInput( $radio ) ) {
-                    return isBtnMode ? btn.addClass('disabled') : true;
+                    return btn ? btn.addClass('disabled') : true;
                 }
             }
 
             if ( $checkbox.length !== 0 ) {
                 if ( form.find('input[type=\'checkbox\']:checked').length < splitInput( $checkbox ) ) {
-                    return isBtnMode ? btn.addClass('disabled') : true;
+                    return btn ? btn.addClass('disabled') : true;
                 }
             }
 
-            return isBtnMode ? btn.removeClass('disabled') : false;
+            return btn ? btn.removeClass('disabled') : false;
         },
 
         isEmptyInputForm: function (form, btn){
 
-            if (form.length !== 1) return null;
+            if ( !form ||form.length !== 1 ) return null;
 
-            var empty = false,
-                isBtnMode = btn.length > 0 ? true : null;
+            var empty = false;
 
             form.find('input').each(function () {
                 if( !this.value ){
@@ -517,9 +519,9 @@
             });
 
             if ( empty ) {
-                return isBtnMode ? btn.addClass('disabled') : true;
+                return btn ? btn.addClass('disabled') : true;
             }
-            return isBtnMode ? btn.removeClass('disabled') : false;
+            return btn ? btn.removeClass('disabled') : false;
         },
 
         hasProperty: function(obj, prop){
@@ -547,7 +549,7 @@
         },
 
         isEmail: function(str){
-            var regExp = new RegExp("^[0-9A-Za-z]@[0-9A-Za-z].com$");
+            var regExp = new RegExp(/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/);
             return regExp.test(str);
         },
 
@@ -1286,4 +1288,3 @@
 
 
 })(window, jQuery);
-
