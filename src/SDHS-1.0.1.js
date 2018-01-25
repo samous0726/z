@@ -75,6 +75,21 @@
         return data ? eval(fn) : fn;
     };
 
+    _Z. renderFile = function ( file, data, container ) {
+        var path = '/' + file + '.html';
+        $.ajax({
+            url : path,
+            type : 'GET',
+            dataType : 'text',
+            async: false,
+            success : function ( html ) {
+                container
+                    ? container.after( _Z.TEEval( html, data ) )
+                    : $('#' + file).html( _Z.TEEval( html, data ) );
+            }
+        });
+    };
+
     /**
      * 禁止按钮连续触发事件
      */
@@ -374,6 +389,14 @@
 
         dateFmt: function ( date, fmt ) {
             return new Date( date ).Format( fmt );
+        },
+
+        turnToHTML: function ( str ) {
+          return str.replace(/\r\n|\n|\r/g, '<br>').replace(/\s/g, '&nbsp;');
+        },
+
+        deleteSpace: function ( str ) {
+            return str.replace(/(^\s*)|(\s*$)|\s/g, "");
         }
     };
 
@@ -449,9 +472,7 @@
                 return !hasProp;
             }
             if ( typeof obj === 'string' ){
-                if( _Z.StringTool.isStringEmpty( obj ) )
-                    return true;
-                return false;
+              return  _Z.StringTool.isStringEmpty( obj );
             }
         },
 
