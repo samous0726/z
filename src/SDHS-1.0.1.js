@@ -7,7 +7,7 @@
  *
  * SDHS JavaScript utils
  *
- * < version 1.0.1 >
+ * < version 1.1.26 >
  *
  * Copyright Zhang zheng
  *
@@ -76,16 +76,23 @@
     };
 
     _Z. renderFile = function ( file, data, container ) {
-        var path = '/' + file + '.html';
+        var path = '/' + file + '.html',
+            content = window['cache_'+file];
+        var render = function ( f, d, c, h ) {
+            c ? c.after( _Z.TEEval( h, d ) ) : $('#' + f).html( _Z.TEEval( h, d ) );
+        };
+        if ( content ) {
+            render( file, data, container, content );
+            return;
+        }
         $.ajax({
             url : path,
             type : 'GET',
             dataType : 'text',
             async: false,
             success : function ( html ) {
-                container
-                    ? container.after( _Z.TEEval( html, data ) )
-                    : $('#' + file).html( _Z.TEEval( html, data ) );
+                render( file, data, container, html );
+                window['cache_'+file] = html;
             }
         });
     };
