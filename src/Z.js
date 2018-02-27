@@ -9,20 +9,22 @@
  *
  * < version 1.1.26 >
  *
- * Copyright Zhang zheng
+ * Copyright@ Zhang zheng
  *
  * Composed by Zhang zheng ( Samous Zhang )
  *
  * Date: 2017/12/06
  *
  *
- *
  * version update rules: update the big version every year but also update the little version in one year
  *
  */
-( function (win, $$) {
+( function (win, $) {
 
     "use strict";
+
+    if (typeof $ !== 'function')
+        throw new Error( 'jQuery is not found, Z.js need jQuery!' );
 
     var _Z =  {};
 
@@ -1315,4 +1317,4 @@
         win .Z  =  Z;
 
 
-})(window, jQuery);
+})(window, typeof jQuery !== 'undefined' ? jQuery : undefined);
