@@ -489,7 +489,12 @@
             if ( !form || form.length !== 1 ) return null;
 
             var empty = false,
-                $input = form.find('input[type=\'text\'], input[type=\'hidden\'], input[type=\'password\'], input[type=\'number\'], textarea'),
+                $input = form.find(
+                    'input[type=\'text\'], ' +
+                    'input[type=\'hidden\'], ' +
+                    'input[type=\'password\'], ' +
+                    'input[type=\'number\'], textarea'
+                ),
                 $radio = form.find('input[type=\'radio\']'),
                 $select = form.find('select'),
                 $checkbox = form.find('input[type=\'checkbox\']');
@@ -653,14 +658,6 @@
     /**
      * Package framework7
      *
-     *          -- created By Samous
-     *
-     *
-     *
-     *
-     *
-     *
-     *
      * picker 省市区组件
      */
     _Z. F7InitPicker = function (selector, pca){
@@ -796,7 +793,7 @@
      *
      *
      */
-    _Z.static = {
+    _Z. static = {
 
         /**
          * < content > standard Chinese cities and areas
@@ -1273,7 +1270,7 @@
     var Z = {};
 
     // conform all the child nodes of child nodes to child nodes;
-    _Z .extend = function () {
+    _Z. extend = function () {
         var s, sType;
 
         for ( s in this ) {
