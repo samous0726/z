@@ -1,0 +1,18 @@
+<template id="demo">
+  <div>
+    <ali>if(data.name == 'samous'){</ali>
+      <div style="padding: 50px 20px; font-size: 22px">我是Samous</div>
+    <ali>} else {</ali>
+      <div style="padding: 50px 20px; font-size: 22px">My name is <ali>=data.name</ali></div>
+    <ali>}</ali>
+  </div>
+</template>
+<script>
+    !function(){
+        var temp = $('#demo'),
+            data = {
+                name: 'Token'
+            };
+        temp.after( Z.TEEval( temp.html(), data ) ).remove()
+    }();
+</script>

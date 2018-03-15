@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<script src="lib/jquery-3.2.1.js"></script>
+<script src="src/Z.js"></script>
+
+<template id="demo">
+  <div>
+    <nb>if(data.name == 'samous'){</nb>
+      <div style="padding: 50px 20px; font-size: 22px">我是Samous</div>
+    <nb>} else {</nb>
+      <div style="padding: 50px 20px; font-size: 22px">My name is <nb>=data.name</nb></div>
+    <nb>}</nb>
+  </div>
+</template>
+<script>
+    !function(){
+        var temp = $('#demo'),
+            data = {
+                name: 'Token'
+            };
+        temp.after( Z.TEEval( temp.html(), data ) ).remove()
+    }();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="progress" width="500" height="500"></canvas>
+</body>
+<script>
+  var canvas = document.querySelector('#progress');
+
+  ctx = canvas.getContext('2d');
+  ctx.lineWidth = 15;
+  ctx.font = '50px SimHei';
+
+  var start = -90,
+      end = -90;
+
+  var draw = setInterval( drawCircle, 50 );
+
+  function drawCircle() {
+      ctx.clearRect(0, 0, 500, 500);
+
+      end += 2;
+      ctx.beginPath();
+      ctx.arc(250, 250, 100, start*Math.PI/180, end*Math.PI/180) //画圆： 长，宽，半径, 起始位置，结束位置
+      ctx.stroke();
+
+      var progressNow = end - start;
+
+      if ( progressNow >= 360 ){
+          clearInterval( draw );
+      }
+
+      if ( progressNow < 90 ) {
+          ctx.strokeStyle = 'orange';
+          ctx.fillStyle = 'orange';
+      } else if ( progressNow > 90 && progressNow < 180 ) {
+          ctx.strokeStyle = '#0000ff';
+          ctx.fillStyle = '#0000ff';
+      } else if ( progressNow > 180 && progressNow < 270 ) {
+          ctx.strokeStyle = 'red';
+          ctx.fillStyle = 'red';
+      } else {
+          ctx.strokeStyle = 'green';
+          ctx.fillStyle = 'green';
+      }
+
+      var percentText = ~~( progressNow / 360 * 100 ) + '%',
+          textWidth = ctx.measureText( percentText ).width;
+
+      ctx.fillText( percentText, 205, 270 ) // 内容，横坐标，纵坐标
+
+
+  }
+
+</script>
+</html>
