@@ -1,0 +1,171 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+.divider {
+    height: 20px;
+}
+
+.wrapper {
+    display: grid;
+    grid-template-columns: 33.333% 33.333% 33.333%;
+    grid-template-rows: 100px 100px ;
+}
+.item1 {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    background-color: bisque;
+}
+.item2 {
+    background-color: darkorange;
+}
+.item3 {
+    grid-row-start: 2;
+    grid-row-end: 4;
+    background-color: #DDDDDD;
+}
+.item4 {
+    grid-column-start: 2;
+    grid-column-end: 4;
+    background-color: cornflowerblue;
+}
+.item5 {
+    background-color: brown;
+}
+.item6 {
+    background-color: chartreuse;
+}
+
+
+
+#triangle-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 100px solid red;
+}
+.triangle-down {
+    position: absolute;
+    right: 12%;
+    top: 50%;
+    transform: translate(0, -50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid #999;
+}
+.select {
+    position: relative;
+    width: 120px;
+    height: 35px;
+}
+
+select {
+    padding: 6px 12px;
+    width: 100%;
+    height: 100%;
+    /*Chrome和Firefox里面的边框是不一样的，所以复写了一下*/
+    border: solid 1px #ddd;
+    border-radius: 4px;
+    /*很关键：将默认的select选择框样式清除*/
+    -moz-appearance:none;
+    -webkit-appearance:none;
+    /*为下拉小箭头留出一点位置，避免被文字覆盖*/
+}
+
+@keyframes trans-triangle{
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(90deg); }
+}
+.trans {
+    animation: trans-triangle 800ms 1 linear;
+}
+
+
+
+
+@import "compass/css3";
+
+body {
+    padding: 50px;
+}
+.wrapper {
+    display: grid;
+    grid-template-columns: 100px 10px 100px 10px 100px 10px 100px;
+    grid-template-rows: auto 10px auto 10px auto;
+}
+.box {
+    background-color: #444;
+    color: #fff;
+    font-size: 150%;
+    padding: 20px;
+    text-align: center;
+}
+.a{
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 2;
+}
+.b {
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 1;
+    grid-row-end: 2;
+}
+.c {
+    grid-column-start: 5;
+    grid-column-end: 6;
+    grid-row-start: 1;
+    grid-row-end: 2;
+}
+.d {
+    grid-column-start: 7;
+    grid-column-end: 8;
+    grid-row-start: 1;
+    grid-row-end: 2;
+}
+.e {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 3;
+    grid-row-end: 4;
+}
+.f {
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 3;
+    grid-row-end: 4;
+}
+.g {
+    grid-column-start: 5;
+    grid-column-end: 6;
+    grid-row-start: 3;
+    grid-row-end: 4;
+}
+.h {
+    grid-column-start: 7;
+    grid-column-end: 8;
+    grid-row-start: 3;
+    grid-row-end: 4;
+}
+.i {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 5;
+    grid-row-end: 6;
+}
+.j {
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 5;
+    grid-row-end: 6;
+}
+
+

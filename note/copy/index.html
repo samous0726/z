@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" type="text/css" href="index.css"/>
+</head>
+<body>
+
+  <div cols="20" id="biao1">12345678</div>
+  <input type="button" onClick="copyUrl2()" value="点击复制代码" />
+
+
+
+  <script src="../../lib/jquery-3.2.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript">
+      function copyUrl2()
+      {
+          var Url2=document.getElementById("biao1").innerText;
+          var oInput = document.createElement('input');
+          oInput.value = Url2;
+          document.body.appendChild(oInput);
+          oInput.select(); // 选择对象
+          document.execCommand("Copy"); // 执行浏览器复制命令
+          oInput.style.display='none';
+          alert('复制成功');
+      }
+
+      console.table( $('.select').position() )
+
+
+  </script>
+
+</body>
+</html>

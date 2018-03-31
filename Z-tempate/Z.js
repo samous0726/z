@@ -11,7 +11,7 @@
  * version update rules: update the big version every year but also update the little version in one year
  *
  */
-( function (win, $) {
+( function (win, $, undef) {
 
     "use strict";
 
@@ -21,63 +21,173 @@
     // this is a inner object for creating the library and mounting functions
     var _Z =  {};
 
-    // TEEval template engine
-    _Z. TEEval = function (tpl, data) {
-        tpl = tpl.replace(/^\s+|\s+$/gm, '').replace(/\r\n/g, '').replace(/\n/g, '').replace(/\r/g, '').replace(/(&lt;)/g, '<').replace(/(&amp;)/g, '&').replace(/(&gt;)/g, '>');
-        var t, fn = '(function(){ var $reg = RegExp(/null|undefined/i);var T = \'\'',
-            tpls = tpl.split('<nb>');
-        for ( t in tpls ) {
-            var p = tpls[t].split('</nb>');
-            if (t !== '0') {
-                fn += '=' === p[0].charAt(0)
-                    ? '+($reg.test(typeof(' + p[0].substr(1) + ')) ? \'\' : ' + p[0].substr(1) + ')'
-                    : ';' + p[0] + 'T=T';
-            }
-            fn += '+\'' + p[ p.length - 1 ] + '\'';
-        }
-        fn += ';return T; })(); ';
-        fn += '\n //@ sourceURL=TEEval.js';
-        return data ? eval(fn) : fn;
+    // all the functions in this object are only support for Z.js itself to invoke, not support for its' users
+    _Z. inner = {
+        // this is a simple implementation of a designated curring variadic function
+        // 这是一个指定可变参柯理化函数的简单实现
+        // it has several functions :
+        // 1. specify execution context to the object which first call the curring
+        // 指定初次调用该函数时的对象做为执行上下文
+        // 2. Specify when the original function is executed by specifying the number of variadic args
+        // 通过指定可变参数量来明确何时执行原始函数
+        currying: function (fn, n) {
+            var arity = n || fn.length;
+            return function curried() {
+                var args = _Z.argsToArray(arguments),
+                    context = this;
+
+                return args.length >= arity ?
+                    fn.apply(context, args) :
+                    function () {
+                        var rest = _Z.inner.argsToArray(arguments);
+                        return curried.apply(context, args.concat(rest));
+                    };
+            };
+        },
+
+        argsToArray: function ( args ) {
+            return [].slice.call( args );
+        },
+
+
     };
 
-    _Z. renderFile = function ( file, data, container ) {
-        var path = '/' + file + '.html',
-            content = window['cache_'+file];
-        var render = function ( f, d, c, h ) {
-            c ? c.after( _Z.TEEval( h, d ) ) : $('#' + f).html( _Z.TEEval( h, d ) );
-        };
-        if ( content ) {
-            render( file, data, container, content );
-            return;
+    _Z. fn = {
+        // TEEval template engine
+        TEEval: function (tpl, data) {
+            tpl = tpl.replace(/^\s+|\s+$/gm, '').replace(/\r\n/g, '').replace(/\n/g, '').replace(/\r/g, '').replace(/(&lt;)/g, '<').replace(/(&amp;)/g, '&').replace(/(&gt;)/g, '>');
+            var t, fn = '(function(){ var $reg = RegExp(/null|undefined/i);var T = \'\'',
+                tpls = tpl.split('<nb>');
+            for ( t in tpls ) {
+                var p = tpls[t].split('</nb>');
+                if (t !== '0') {
+                    fn += '=' === p[0].charAt(0)
+                        ? '+($reg.test(typeof(' + p[0].substr(1) + ')) ? \'\' : ' + p[0].substr(1) + ')'
+                        : ';' + p[0] + 'T=T';
+                }
+                fn += '+\'' + p[ p.length - 1 ] + '\'';
+            }
+            fn += ';return T; })(); ';
+            fn += '\n //@ sourceURL=TEEval.js';
+            return data ? eval(fn) : fn;
         }
-        $.ajax({
-            url : path,
-            type : 'GET',
-            dataType : 'text',
-            async: false,
-            success : function ( html ) {
+
+    };
+
+    _Z. ajax = {
+        post: function(url, data, suFn){
+            if( _Z.StringTool.isStringEmpty(url) ) {
+                console.log('post -> url is null');
+                return;
+            }
+            if(suFn){
+                $.ajax({
+                    url : url,
+                    data : data,
+                    type : 'POST',
+                    dataType : 'json',
+                    success : suFn,
+                });
+            } else {
+                $.ajax({
+                    url : url,
+                    data : null,
+                    type : 'POST',
+                    dataType : 'json',
+                    success : data,
+                });
+            }
+        },
+
+        get: function(url, data, suFn){
+            if( _Z.StringTool.isStringEmpty(url) ) {
+                console.log('get -> url is null');
+                return;
+            }
+            if(suFn){
+                $.ajax({
+                    url : url,
+                    data : data,
+                    type : 'GET',
+                    dataType : 'json',
+                    success : suFn,
+                });
+
+            } else {
+                $.ajax({
+                    url : url,
+                    data : null,
+                    type : 'GET',
+                    dataType : 'json',
+                    success : data,
+                });
+            }
+        },
+
+        // TODO
+        getPlugin: function (path) {
+            $.ajax({
+                url : path,
+                type : 'GET',
+                dataType : 'text',
+                async: false,
+                success : function () {
+
+                }
+            });
+        },
+
+        readFile: function ( path, fn ) {
+            $.ajax({
+                url : path,
+                type : 'GET',
+                dataType : 'text',
+                async: false,
+                success : fn
+            });
+        },
+
+        renderFile: function ( file, data, container ) {
+            var path = '/' + file + '.html',
+                content = window['cache_'+file];
+            if ( content ) {
+                render( file, data, container, content );
+                return;
+            }
+            _Z.ajax.readFile(path, function ( html ) {
                 render( file, data, container, html );
                 window['cache_'+file] = html;
+            });
+            function render( f, d, c, h ) {
+                c ? c.after( _Z.TEEval( h, d ) ) : $('#' + f).html( _Z.TEEval( h, d ) );
             }
-        });
+        }
+
     };
 
-    _Z. EventControl = {
-        // forbidden button continuous clicks in 2s
-        btnDisabled: function (btn) {
-            btn.prop( 'disabled', true );
-            setTimeout(function(){
-                btn.prop( 'disabled', false );
-            }, 2000);
+    _Z. event = {
+        // scroll to the element position
+        scrollTo: function ( el, area, speed ) {
+            area.animate({scrollTop: el.offset().top - area.offset().top}, speed);
         },
 
-        prevent2sByAddClass: function (btn) {
-            if ( btn.length === 0 ) return;
-            btn.addClass( 'disabled' );
+        // forbidden button continuous clicks in 2s
+        preventClickIn2s: function ( $btn ) {
+            if ( !$btn && $btn.length === 0 ) return null;
+            if ( $btn.tagName === 'BUTTON' ) {
+                $btn.prop( 'disabled', true );
+                setTimeout(function(){
+                    $btn.prop( 'disabled', false );
+                }, 2500);
+                return $btn;
+            }
+            $btn.addClass( 'disabled' );
             setTimeout(function(){
-                btn.removeClass( 'disabled' );
+                $btn.removeClass( 'disabled' );
             }, 2000);
+            return $btn;
         },
+
 
         getValidCode: function () {
             var monitor = function($getCode) {
@@ -188,59 +298,6 @@
     };
 
     /**
-     *  ajax
-     */
-    _Z. post = function(url, data, suFn){
-        if( _Z.StringTool.isStringEmpty(url) ) {
-            console.log('post -> url is null');
-            return;
-        }
-        if(suFn){
-            $.ajax({
-                url : url,
-                data : data,
-                type : 'POST',
-                dataType : 'json',
-                success : suFn,
-            });
-        } else {
-            $.ajax({
-                url : url,
-                data : null,
-                type : 'POST',
-                dataType : 'json',
-                success : data,
-            });
-        }
-    };
-
-    _Z. get = function(url, data, suFn){
-        if( _Z.StringTool.isStringEmpty(url) ) {
-            console.log('get -> url is null');
-            return;
-        }
-        if(suFn){
-            $.ajax({
-                url : url,
-                data : data,
-                type : 'GET',
-                dataType : 'json',
-                success : suFn,
-            });
-
-        } else {
-            $.ajax({
-                url : url,
-                data : null,
-                type : 'GET',
-                dataType : 'json',
-                success : data,
-            });
-        }
-
-    };
-
-    /**
      * css动画库jquery插件
      */
     $.fn.extend({
@@ -279,7 +336,19 @@
 
 
 
-    _Z. JSONTool = {
+    _Z. dataTool = {
+        length: function ( obj ) {
+            var k, count = 0, o = obj;
+            if ( !o || o === {} ) return count;
+
+            if ( _Z.Checker.getType(o) === 'object' ) {
+                for ( k in o ) {
+                    count++;
+                }
+                return count;
+            }
+            return o.length;
+        },
 
         formGetData: function (form, param) {
            var request = {};
@@ -311,26 +380,9 @@
            return request;
         },
 
-        length: function ( obj ) {
-            var k, count = 0, o = obj;
-            if ( !o ) return count;
-
-
-            if ( typeof o === 'object' ) {
-                for ( k in o ) {
-                    count++;
-                }
-                return count;
-            }
-
-            return o.length;
-
-        }
-
     };
 
     _Z. Format = {
-
         cashFormat: function (cash) {
             return cash.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         },
@@ -366,16 +418,19 @@
           return str.replace(/\r\n|\n|\r/g, '<br>').replace(/\s/g, '&nbsp;');
         },
 
-        deleteSpace: function ( str ) {
+        cleanSpace: function ( str ) {
             return str.replace(/(^\s*)|(\s*$)|\s/g, "");
+        },
+
+        cleanReturn: function ( str ) {
+            return str.replace(/\r\n/g, '').replace(/\n/g, '').replace(/\r/g, '')
         }
     };
 
     _Z. StringTool = {
-
         isNull: function(str){
             var result = null;
-            if(str === undefined || str === null){
+            if(str === undef || str === null){
                 result = true;
             } else {
                 result = false;
@@ -384,7 +439,7 @@
         },
 
         isStringEmpty: function(str){
-            if(str === undefined || str === null || str === ""){
+            if(str === undef || str === null || str === ""){
                 return true;
             }
             return false;
@@ -414,36 +469,38 @@
      * 校验器
      */
     _Z. Checker = {
+        getType: function () {
+            return Object.prototype.toString.call(arguments[0]).slice(8, -1).toLowerCase();
+        },
 
-        number: 'number',
+        isPlainObject: function ( obj ) {
+            return _Z.Checker.getType( obj ) === 'object';
+        },
 
         isContains: function( str, substr ){
             return str.indexOf(substr) >= 0;
         },
 
-        require: function( str ) {
-            if(_Z.StringTool.isStringEmpty(str))
-                return false;
-            return true;
-        },
-
         isEmpty: function( obj ) {
-            if( typeof obj === 'undefined' ){
-                return true;
-            }
-            if( Array.isArray( obj ) ) {
-                return obj.length === 0;
-            }
-            if ( typeof obj === "object" && !( Array.isArray( obj ) ) ){
-                var prop, hasProp = false;
-                for ( prop in obj ) {
-                    hasProp = true;
-                    break;
-                }
-                return !hasProp;
-            }
-            if ( typeof obj === 'string' ){
-              return  _Z.StringTool.isStringEmpty( obj );
+            var type = _Z.Checker.getType( obj );
+            switch ( type ) {
+                case 'null':
+                    return null;
+                case 'undefined':
+                    return undef;
+                case 'object':
+                    var p, has = false;
+                    for ( p in obj ) {
+                        has = true;
+                        break;
+                    }
+                    return !has;
+                case 'array':
+                    return obj.length === 0;
+                case 'string':
+                    return obj === '';
+                default:
+                    return false;
             }
         },
 
@@ -587,23 +644,7 @@
                 return test;
             }
             _Z.Format.validFormat(test, input, btn);
-        },
-
-        /**
-         * 开始时间与结束时间判断
-         * @param startTime 开始时间
-         * @param endTime  结束时间
-         * @returns {boolean} startTime 早于 endTime 返回 true,否则返回false
-         */
-        isStartTimeEarlier: function(startTime, endTime){
-            var start=new Date(startTime.replace("-", "/").replace("-", "/"));
-            var end=new Date(endTime.replace("-", "/").replace("-", "/"));
-            if( start.getTime() < end.getTime() ){
-                return true;
-            }else{
-                return false;
-            }
-        },
+        }
 
     };
 
@@ -615,192 +656,55 @@
             });
         },
 
-    };
-
-    /**
-     * Package framework7
-     *
-     * picker 省市区组件
-     */
-    _Z. F7InitPicker = function (selector, pca){
-        var _selector = selector || '',
-            pcaArr = [];
-
-        if(pca){
-            pcaArr = pca.split(" ");
-        }
-        var p, pro = [],
-            city = [],
-            area = [];
-
-        // 省分数组
-        for ( p in Z.static.province_city_area ) {
-            pro.push(p);
-        }
-        city = getCitys(pcaArr[0]);
-        area = getAreas(pcaArr[0], pcaArr[1]);
-
-        if($.inArray(pcaArr[0], pro) == -1){
-            pcaArr[0] = pro[0];
-        }
-        if($.inArray(pcaArr[1], city) == -1){
-            pcaArr[1] = city[0];
-        }
-        if($.inArray(pcaArr[2], area) == -1){
-            pcaArr[2] = area[0];
-        }
-
-        myApp.picker({
-            input: _selector,
-            onlyOnPopover: true,
-            scrollToInput: false,
-            rotateEffect: true,
-            value: pcaArr,
-            toolbarCloseText: '完成',
-            closeByOutsideClick: true,
-            formatValue: function (picker, values) {
-                return values.join(' ');
-            },
-            cols: [
-                {
-                    width: '25%',
-                    textAlign: 'center',
-                    values: pro,
-                    onChange: function (picker, province) {
-                        //每次选城市的时候先清掉之前选的省份
-                        city.length = 0;
-                        city = getCitys(province);
-                        // 选完省份联动城市赋值
-                        if (picker.cols[1].replaceValues) {
-                            picker.cols[1].replaceValues(city);
-                        }
-
-                        // 同时给地区赋值
-                        area.length = 0;
-                        area = getAreas(province, city[0]);
-                        if (picker.cols[2].replaceValues) {
-                            picker.cols[2].replaceValues(area);
-                        }
-                    }
-                },
-                {
-                    textAlign: 'center',
-                    width: '30%',
-                    values: city,
-                    onChange: function (picker, c) {
-                        var province = picker.cols[0].value;
-
-                        area.length = 0;
-                        area = getAreas(province, c);
-                        if (picker.cols[2].replaceValues) {
-                            picker.cols[2].replaceValues(area);
-                        }
-                    }
-                },
-                {
-                    width: '44%',
-                    textAlign: 'center',
-                    values: area
-                }
-            ]
-        });
-
-        function getCitys(province){
-            var _province = province || "北京市";
-            var c, citys = [];
-            if( !Z.static.province_city_area[_province] ){
-                _province = "北京市";
-            }
-            for ( c in Z.static.province_city_area[_province] ){
-                citys.push(c);
-            }
-            return citys;
-        }
-
-        function getAreas(province, city){
-
-            var _province = province || "北京市",
-
-                _city = city || "市辖区";
-
-            if( !Z.static.province_city_area[_province] ){
-                _province = "北京市";
-            }
-
-            if( !Z.static.province_city_area[_province][_city] ){
-                _city = "市辖区";
-            }
-
-            var a, area,
-                areas = [];
-
-            for ( a in Z.static.province_city_area[_province][_city] ){
-
-                area = Z.static.province_city_area[_province][_city][a];
-
-                areas.push( area );
-
-            }
-
-            return areas;
-
+        bindWinVal: function ( k, v ) {
+            if ( !v ) return win[ k ] ? win[ k ] : undef;
+            if ( !win[ k ] )
+                win[ k ] = v;
+            return v;
         }
 
     };
 
 
-
-    /**
-     * static data post here
-     *
-     *
-     */
-    _Z. static = {
-
-
-    };
+    // this static data should be used only the library internally.
+    // like any frame configs, initialized options inside the file.
+    // it is strongly suggested not to put any given projects options data
+    // in this object by changing the source code
+    // you can mount any static data in this object in your project files instead of putting in here
+    _Z. static = { };
 
     var Z = {};
 
     // conform all the child nodes of child nodes to child nodes;
     _Z. extend = function () {
-        var s, sType;
+        var s, vType;
 
         for ( s in this ) {
-
+            var value = this[ s ];
             if ( _Z .Checker .hasProperty( Z, s ) ) {
                 throw 'The key name \' ' + s + ' \' has been occupied!';
             }
 
             // load the static data
-            if ( s === 'static' && _Z.length) {
-                Z[ s ] = this[ s ];
+            if ( s === 'static' && _Z.dataTool.length( value ) !== 0 ) {
+                Z[ s ] = value;
                 continue;
             }
 
-            sType = typeof this[ s ];
-
-            switch ( sType ) {
-
+            vType = typeof value;
+            switch ( vType ) {
                 case 'function':
-                    Z[ s ] = this[ s ];
+                    Z[ s ] = value;
                     break;
-
                 case 'object':
-                    _Z.extend.call( this[ s ] );
+                    _Z.extend.call( value );
                     break;
-
                 default:
-
             }
-
         }
-
     };
 
     _Z.extend.call( _Z );
-
-
 
     win .JSB =
 
