@@ -33,7 +33,7 @@
         currying: function (fn, n) {
             var arity = n || fn.length;
             return function curried() {
-                var args = _Z.argsToArray(arguments),
+                var args = _Z.inner.argsToArray(arguments),
                     context = this;
 
                 return args.length >= arity ?
@@ -76,8 +76,8 @@
 
     _Z. ajax = {
         post: function(url, data, suFn){
-            if( _Z.StringTool.isStringEmpty(url) ) {
-                console.log('post -> url is null');
+            if( !url ) {
+                console.warn('get -> url is null');
                 return;
             }
             if(suFn){
@@ -100,8 +100,8 @@
         },
 
         get: function(url, data, suFn){
-            if( _Z.StringTool.isStringEmpty(url) ) {
-                console.log('get -> url is null');
+            if( !url ) {
+                console.warn('get -> url is null');
                 return;
             }
             if(suFn){
@@ -666,11 +666,13 @@
     };
 
 
-    // this static data should be used only the library internally.
+    // this innerStatic data should be used only the library internally.
     // like any frame configs, initialized options inside the file.
     // it is strongly suggested not to put any given projects options data
     // in this object by changing the source code
     // you can mount any static data in this object in your project files instead of putting in here
+    _Z. innerStatic = {};
+
     _Z. static = { };
 
     var Z = {};
