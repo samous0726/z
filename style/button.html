@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px 50px
+        }
+        * {
+            box-sizing: border-box;
+        }
+        .line-row {
+            padding: 15px 0;
+            margin-bottom: 50px;
+        }
+        .line-row>* {
+            display: inline-block;
+            margin-right: 50px;
+        }
+        .line-row>*>* {
+            margin-right: 15px;
+            vertical-align: bottom;
+        }
+        .headline {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .headline.info {
+            border-color: #bce8f1;
+            background: #CBF6FD;
+            color: #31708f;
+        }
+        .headline.success {
+            border-color: #d6e9c6;
+            background: #ddefd4;
+            color: #3c763d;
+        }
+        code {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            background: #F9F2F4;
+            color: #c7254e;
+            font-size: 65%;
+            font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+        }
+    </style>
+
+    <style>
+        /* z-btn entire style */
+        .z-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            outline: none;
+            font-size: .9rem;
+            color: #FFF;
+        }
+        .z-btn:hover {
+            cursor: pointer;
+        }
+        .z-btn.ghost:hover {
+            color: #FFF !important;
+        }
+        .z-btn:active {
+            box-shadow: none !important;
+        }
+        .z-btn.btn-small {
+            padding: 4px 12px;
+            border-radius: 2px;
+            font-size: .7rem;
+        }
+        .z-btn.btn-large {
+            padding: 12px 35px;
+            border-radius: 4px;
+            font-size: 1.5rem;
+        }
+
+        /* z-btn love style */
+        .z-btn.love:hover {
+            background: #DE4F79;
+        }
+        .z-btn.love.ghost:hover {
+            background: #EF5885;
+        }
+        .z-btn.love {
+            background: linear-gradient(135deg, #FF4C9F, #FF7B74);
+            box-shadow: 1px 1px 3px #A57E90;
+        }
+        .z-btn.love.ghost {
+            background: #FFF;
+            color: #FF5D90;
+            border: 1px solid #FF5D90;
+            box-shadow: 1px 1px 3px #B7A5AD;
+        }
+
+        /* z-btn sky style */
+        .z-btn.sky:hover {
+            background: #0B8DC3;
+        }
+        .z-btn.sky.ghost:hover {
+            background: #21baf9;
+        }
+        .z-btn.sky {
+            background: linear-gradient(135deg, #25CCF7, #1B9CFC);
+            box-shadow: 1px 1px 3px #536775;
+        }
+        .z-btn.sky.ghost {
+            background: #FFF;
+            color: #21B8F9;
+            border: 1px solid #21B8F9;
+            box-shadow: 1px 1px 3px #98AFB9;
+        }
+
+        /* z-btn grass style */
+        .z-btn.grass:hover {
+             background: #009432 ;
+         }
+        .z-btn.grass.ghost:hover {
+            background: #51BD41;
+        }
+        .z-btn.grass {
+            background: linear-gradient(135deg, #65D654, #39A02A);
+            box-shadow: 1px 1px 3px #54775e;
+        }
+        .z-btn.grass.ghost {
+            background: #FFF;
+            color: #43CE8D;
+            border: 1px solid #43CE8D;
+            box-shadow: 1px 1px 3px #b1c7bd;
+        }
+
+        /* z-btn cleaner style */
+        .z-btn.cleaner:hover {
+            background: #777777;
+        }
+        .z-btn.cleaner.ghost:hover {
+            background: #ADADAD;
+        }
+        .z-btn.cleaner {
+            background: linear-gradient(135deg, #ADADAD, #777777);
+            box-shadow: 1px 1px 3px #808080;
+        }
+        .z-btn.cleaner.ghost {
+            background: #FFF;
+            color: #ADADAD;
+            border: 1px solid #ADADAD;
+            box-shadow: 1px 1px 3px #5A5A5A;
+        }
+    </style>
+</head>
+<body>
+    <div class="headline info">Fill Color Buttons ( <code>color: #19436F;</code><code> border: 1px solid #7BC2DD;</code> <code>background: #CBF6FD;</code> )</div>
+    <div class="line-row">
+        <div>
+            <button class="z-btn btn-small love">small</button>
+            <button class="z-btn love">normal</button>
+            <button class="z-btn btn-large love">large</button>
+        </div>
+        <div>
+            <button class="z-btn btn-small sky">small</button>
+            <button class="z-btn sky">normal</button>
+            <button class="z-btn btn-large sky">large</button>
+        </div>
+        <div>
+            <button class="z-btn btn-small grass">small</button>
+            <button class="z-btn grass">normal</button>
+            <button class="z-btn btn-large grass">large</button>
+        </div>
+        <div>
+            <button class="z-btn btn-small cleaner">small</button>
+            <button class="z-btn cleaner">normal</button>
+            <button class="z-btn btn-large cleaner">large</button>
+        </div>
+    </div>
+    <div class="headline success">Ghost style Buttons</div>
+    <div class="line-row">
+        <div>
+            <button class="z-btn btn-small love ghost">small</button>
+            <button class="z-btn love ghost">normal</button>
+            <button class="z-btn btn-large love ghost">large</button>
+        </div>
+        <div>
+            <button class="z-btn btn-small sky ghost">small</button>
+            <button class="z-btn sky ghost">normal</button>
+            <button class="z-btn btn-large sky ghost">large</button>
+        </div>
+        <div>
+            <button class="z-btn btn-small grass ghost">small</button>
+            <button class="z-btn grass ghost">normal</button>
+            <button class="z-btn btn-large grass ghost">large</button>
+        </div>
+        <div>
+            <button class="z-btn btn-small cleaner ghost">small</button>
+            <button class="z-btn cleaner ghost">normal</button>
+            <button class="z-btn btn-large cleaner ghost">large</button>
+        </div>
+    </div>
+
+
+</body>
+</html>

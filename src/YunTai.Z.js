@@ -1,12 +1,12 @@
 /**
  *
- * < version 2.6.30 >
+ * < version 1.1.26 >
  *
  * Copyright© Zhang zheng
  *
  * Composed by Zhang zheng ( Samous Zhang )
  *
- * create date: 2017/12/06
+ * Date: 2017/12/06
  *
  * version update rules: update the big version every year but also update the little version in one year
  *
@@ -16,7 +16,6 @@
     "use strict";
 
     if (typeof $ !== 'function')
-
         throw new Error( 'jQuery is not found, Z.js need jQuery!' );
 
     // this is a inner object for creating the library and mounting functions
@@ -24,33 +23,9 @@
 
     // all the functions in this object are only support for Z.js itself to invoke, not support for its' users
     _Z. inner = {
-
-        // this is a simple implementation of a designated curring variadic function
-        // 这是一个指定可变参柯理化函数的简单实现
-        // it has several functions :
-        // 1. specify execution context to the object which first call the curring
-        // 指定初次调用该函数时的对象做为执行上下文
-        // 2. Specify when the original function is executed by specifying the number of variadic args
-        // 通过指定可变参数量来明确何时执行原始函数
-        currying: function (fn, n) {
-            var arity = n || fn.length;
-            return function curried() {
-                var args = _Z.inner.argsToArray(arguments),
-                    context = this;
-
-                return args.length >= arity ?
-                    fn.apply(context, args) :
-                    function () {
-                        var rest = _Z.inner.argsToArray(arguments);
-                        return curried.apply(context, args.concat(rest));
-                    };
-            };
-        },
-
         argsToArray: function ( args ) {
             return [].slice.call( args );
         },
-
 
     };
 
@@ -79,7 +54,7 @@
     _Z. ajax = {
         post: function(url, data, suFn){
             if( !url ) {
-                console.warn('get -> url is null');
+                console.warn('post -> url is null');
                 return;
             }
             if(suFn){
@@ -103,7 +78,7 @@
 
         get: function(url, data, suFn){
             if( !url ) {
-                console.warn('get -> url is null');
+                console.log('get -> url is null');
                 return;
             }
             if(suFn){
@@ -126,44 +101,35 @@
             }
         },
 
-        readFile: function ( path, fn ) {
+        HSFPost: function ( method, data, fn ) {
+            // 深复制data参数 否则会篡改数据源 违背函数式编程原则
+            var d = {};
+            if ( _Z.Checker.getType(data) === 'object' ) {
+                if ( data ) {
+                    d.paramData =  JSON.stringify( data );
+                }
+                d['userId'] = $('.empId').val();
+                d['serviceName'] = 'AspHsfService';
+                d['methodName'] = method;
+            }
             $.ajax({
-                url : path,
-                type : 'GET',
-                dataType : 'text',
-                async: false,
-                success : fn
+                url : '/expert/hsf',
+                data : d,
+                type : 'POST',
+                dataType : 'json',
+                success : fn,
+                error: function (res) {
+                    console.table(res)
+                }
             });
-        },
-
-        renderFile: function ( file, data, container ) {
-            var path = '/' + file + '.html',
-                content = window['cache_file_'+file];
-            if ( content ) {
-                render( file, data, container, content );
-                return;
-            }
-            this. readFile(path, function ( html ) {
-                render( file, data, container, html );
-                window['cache_file_'+file] = html;
-            });
-            function render( f, d, c, h ) {
-                c ? c.after( _Z. fn. TEEval( h, d ) ) : $('#' + f).html( _Z. fn. TEEval( h, d ) );
-            }
         }
-
     };
 
     _Z. event = {
-        // scroll to the element position
-        scrollTo: function ( el, area, speed ) {
-            area.animate({scrollTop: el.offset().top - area.offset().top}, speed);
-        },
-
-        // forbidden button continuous clicks in 2s
+        // forbidden button continuous clicks in 2.5s
         preventClickIn2s: function ( $btn ) {
-            if ( !$btn || $btn.length === 0 ) return null;
-            if ( $btn[0].Name === 'BUTTON' ) {
+            if ( !$btn && $btn.length === 0 ) return null;
+            if ( $btn[0].tagName === 'BUTTON' ) {
                 $btn.prop( 'disabled', true );
                 setTimeout(function(){
                     $btn.prop( 'disabled', false );
@@ -177,128 +143,67 @@
             return $btn;
         },
 
-
-        getValidCode: function () {
-            var monitor = function($getCode) {
-                var LocalDelay = getLocalDelay();
-                if(LocalDelay.time != null){
-                    var timeLine = parseInt((new Date().getTime() - LocalDelay.time) / 1000);
-                    if (timeLine < LocalDelay.delay) {
-                        var _delay = LocalDelay.delay - timeLine;
-                        $getCode.text(_delay + "s后再获取");
-                        $getCode.addClass('disabled');
-                        var timer = setInterval(function() {
-                            if (_delay > 1) {
-                                _delay--;
-                                $getCode.text(_delay+"s后再获取");
-                                setLocalDelay(_delay);
-                            } else {
-                                clearInterval(timer);
-                                $getCode.text("获取验证码");
-                                $getCode.removeClass('disabled');
-                            }
-                        }, 1000);
-                    }
-                }
-            };
-
-            var countDown = function ($getCode) {
-                if ($getCode.text() == "获取验证码") {
-                    var _delay = 60;
-                    var delay = _delay;
-                    $getCode.text(_delay+"s后再获取");
-                    $getCode.addClass('disabled');
-                    var timer = setInterval(function() {
-                        if (delay > 1) {
-                            delay--;
-                            $getCode.html(delay+"s后再获取");
-                            setLocalDelay(delay);
-                        } else {
-                            clearInterval(timer);
-                            $getCode.text("获取验证码");
-                            $getCode.removeClass('disabled');
-                        }
-                    }, 1000);
-
-                } else {
-                    return false;
-                }
-            };
-
-            //set local delay
-            function setLocalDelay (delay) {
-                sessionStorage.setItem("delay_", delay);
-                sessionStorage.setItem("time_", new Date().getTime());
-            }
-
-            //get local delay()
-            function getLocalDelay() {
-                var LocalDelay = {};
-                LocalDelay.delay = sessionStorage.getItem("delay_");
-                LocalDelay.time = sessionStorage.getItem("time_");
-                return LocalDelay;
-            }
-
-            $.fn.extend({
-                startGetCode: function(){
-                    return this.each(function(){
-                        countDown( $(this) );
-                    });
-                }
-            });
-
-            $.fn.extend({
-                startMonitor: function(){
-                    return this.each(function(){
-                        monitor( $(this) );
-                    });
-                }
-            });
-
-            // param = { 获取按钮， 手机号输入框， url, request }
-            return function ( param ) {
-                if( !param ) return;
-                var button = param.button,
-                    input = param.input,
-                    req = param.request;
-
-                input.focus(function () {
-                    input.css('border', "0");
-                });
-                button.startMonitor();
-                input.on('input', function () {
-                    if ( _Z.Checker.isMobile_17(this.value) ) {
-                        button.text().indexOf('s后再获取') === -1 ? button.removeClass('disabled') : '';
-                        return;
-                    }
-                    button.addClass('disabled');
-                });
-                // 获取验证码
-                button.off().click(function () {
-                    button.startGetCode();
-                    req.mobile = input.val();
-                    _Z.post( param.url, req, function () {} );
-                });
-
-            }
-
+        // scroll to the element position
+        scrollTo: function ( el, area, time ) {
+            area.animate({scrollTop: el.offset().top - area.offset().top + area.scrollTop()}, time);
         },
 
     };
 
-    /**
-     * css动画库jquery插件
-     */
-    $.fn.extend({
-        animateCss: function (animationName) {
-            var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
-            $(this).addClass('animated ' + animationName).one(animationEnd, function() {
-                $(this).removeClass('animated ' + animationName);
-            });
-            return this;
-        }
-    });
+    _Z. style = {
+        addInputWarn: function ( $input, remark ) {
+            return  remark
+                ? $input.addClass('caution-input').val('').attr('placeholder', remark)
+                : $input.addClass('caution-input');
+        },
 
+        removeInputWarn: function ( $input ) {
+            return $input.removeClass('caution-input');
+        },
+
+        addSelectWarn: function ( $sel ) {
+            return  $sel.addClass('caution-input');
+        },
+
+        removeSelectWarn: function ( $sel ) {
+            return $sel.removeClass('caution-input');
+        },
+
+        getHighlightColor: function ( num ) {
+            var arr = ['#00FFFF','#FFFAF0','#FF34B3','#EEB422','#D1EEEE','#CAFF70',
+                    '#98FB98','#8DEEEE','#76EEC6','#FFFF66','#FF3366','#FF33FF',
+                    '#FF0033','#99FF66','#76EEC6','#66CCFF','#CCCCFF',
+                ],
+                length = arr.length;
+            return num
+                ? this.getMultipleColors( num, this.getHighlightColor )
+                : arr[( Math.floor( Math.random() * length ))];
+        },
+
+        getRandomColor: function ( num ) {
+            var i,arr = [0,1,2,3,4,5,6,7,8,9,'a','b','c','d','e','f'],
+                clr = '#';
+            for ( i = 0; i < 6; i++ ) {
+                clr += arr[ Math.floor(Math.random() * 16) ];
+            }
+            return num
+                ? this.getMultipleColors( num, this.getRandomColor )
+                : clr;
+        },
+
+        getMultipleColors: function ( sum, mode ) {
+            if ( sum && typeof mode === 'function' ) {
+                var i, result=[];
+                while ( result.length < sum ) {
+                    result.push( mode() );
+                    $.unique(result)
+                }
+                return result;
+            }
+            return this.getRandomColor();
+        },
+
+    };
 
     // 对Date的扩展，将 Date 转化为指定格式的String
     // 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
@@ -306,7 +211,7 @@
     // 例子：
     // (new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
     // (new Date()).Format("yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18
-    win. Date. prototype. Format = function (fmt) { //author: meizz
+    win. Date. prototype. Format = function (fmt) {
         var o = {
             "M+": this.getMonth() + 1, //月份
             "d+": this.getDate(), //日
@@ -324,21 +229,7 @@
     };
 
 
-
     _Z. dataTool = {
-        length: function ( obj ) {
-            var k, count = 0, o = obj;
-            if ( !o || o === {} ) return count;
-
-            if ( _Z.Checker.getType(o) === 'object' ) {
-                for ( k in o ) {
-                    count++;
-                }
-                return count;
-            }
-            return o.length;
-        },
-
         getMostElementInArray: function (arr) {
             if ( !arr.length ) return;
             var res = {};
@@ -383,9 +274,52 @@
             return result;
         },
 
-        regroupArrayByKey: function ( data ) {
-            var outer = {};
+        length: function ( obj ) {
+            var k, count = 0, o = obj;
+            if ( !o || o === {} ) return count;
 
+            if ( _Z.Checker.getType(o) === 'object' ) {
+                for ( k in o ) {
+                    count++;
+                }
+                return count;
+            }
+            return o.length;
+        },
+
+        formGetData: function (form, param) {
+            var request = {};
+            if ( !form ) return request;
+
+            var _input = form.find('input') || [],
+                k, val, name, i = 0;
+            for ( ; i < _input.length; i++ ) {
+                name = _input[i].name;
+                val = _input[i].value;
+                if ( name && val ) {
+                    request[ name ] = val;
+                }
+            }
+            if( param && typeof param === 'object') {
+                for ( k in param ) {
+                    request[k] = param[k];
+                }
+            }
+            if( param && $(param).length === 1 ) {
+                var __form = $(param),
+                    __input = __form.find('input') || [];
+
+                var j = 0;
+                for ( ; j < __input.length; j ++) {
+                    request[__input[j].name] = __input[j].value;
+                }
+            }
+            return request;
+        },
+
+        regroupArrayByKey: function ( data ) {
+            var outer = {},
+                _this = '';
             // init every key name to be an array
             $.each(data[0], function (k) {
                 outer[k] = []
@@ -398,38 +332,7 @@
             });
 
             return outer;
-        },
-
-        formGetData: function (form, param) {
-           var request = {};
-           if ( !form ) return request;
-
-           var _input = form.find('input') || [],
-               k, val, name, i = 0;
-           for ( ; i < _input.length; i++ ) {
-               name = _input[i].name;
-               val = _input[i].value;
-               if ( name && val ) {
-                   request[ name ] = val;
-               }
-           }
-           if( param && typeof param === 'object') {
-               for ( k in param ) {
-                   request[k] = param[k];
-               }
-           }
-           if( param && $(param).length === 1 ) {
-               var __form = $(param),
-                   __input = __form.find('input') || [];
-
-               var j = 0;
-               for ( ; j < __input.length; j ++) {
-                   request[__input[j].name] = __input[j].value;
-               }
-           }
-           return request;
-        },
-
+        }
     };
 
     _Z. Format = {
@@ -527,12 +430,12 @@
             return new Date().Format( fmt || 'yyyy-MM-dd' )
         },
 
-        dateFmt: function ( date, fmt ) {
-            return new Date( date ).Format( fmt );
+        dateFormat: function ( date, fmt ) {
+            return new Date( date ).Format( fmt || 'yyyy-MM-dd hh:mm:ss' );
         },
 
         turnToHTML: function ( str ) {
-          return str.replace(/\r\n|\n|\r/g, '<br>').replace(/\s/g, '&nbsp;');
+            return str.replace(/\r\n|\n|\r/g, '<br>').replace(/\s/g, '&nbsp;');
         },
 
         cleanSpace: function ( str ) {
@@ -562,7 +465,7 @@
             return false;
         },
 
-        replaceAll: function(s1,s2){
+        replaceAll: function( s1, s2 ){
             var finish = false;
             var resultStr = this.replace(s1,s2);
             while(!finish){
@@ -574,20 +477,158 @@
             }
             return resultStr;
         },
+
+        isStartWith: function (content, searchVal) {
+            return content.indexOf(searchVal) === 0;
+        },
+
+        getEmployeeType: function (content) {
+            return content
+                ? this. isStartWith( content.toLowerCase(), 'wb' ) ? '外包' : '自营'
+                : '';
+        }
     };
 
-    $.scrollto = function( position, time ){
-        $('html, body').animate({
-            scrollTop: $(position).offset().top
-        }, time);
+    /**
+     * echart
+     */
+    _Z. eChart = {
+        line: function (conf) {
+            if ( !conf && _Z.Checker.getType( conf ) !== 'object' ) return;
+
+            var container = document.getElementById(conf.id);
+
+            $(container).removeAttr('_echarts_instance_').html('');
+
+            var myChart = echarts.init( container );
+
+            // 设置轴线和轴线文字的颜色
+            // var color = typeof conf.clr !== 'string' ? conf.clr[ conf.clr.length - 1 ] : conf.clr;
+            var color = '#FFF',
+                yOpts = {
+                    splitLine:{ lineStyle: { color: '#DDD', opacity: .4 } },
+                    axisLine: {  lineStyle: { color: color } }
+                },
+
+                yAxis = conf.yAxis || yOpts;
+
+            myChart.setOption({
+                title: conf.title || {},
+                color: conf.clr,
+                grid: conf.grid,
+                legend: conf.legend || {},
+                tooltip : {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        label: {
+                            backgroundColor: '#6a7985'
+                        }
+                    }
+                },
+                textStyle: { color: color },
+                xAxis: {
+                    axisLine: { lineStyle: { color: color } },
+                    data: conf.dataX
+                },
+                yAxis: yAxis,
+                series: conf.series,
+
+            });
+            return myChart;
+        },
+
+        pies: function (conf) {
+            if ( !conf && _Z.getType( conf ) !== 'object' ) return;
+
+            var data = [];
+            // key转化为 name 和 value
+            $.each(conf.data,function () {
+                var pack = {};
+                $.each(this,function (k, v) {
+                    if ( !isNaN( v ) ) {
+                        pack.value = v;
+                        return true;
+                    }
+                    pack.name = v
+                });
+                data.push(pack);
+            });
+
+            var container = document.getElementById(conf.id);
+
+            $(container).removeAttr('_echarts_instance_').html('');
+
+            var myChart = echarts.init( container );
+            myChart.setOption({
+                color: _Z. style. getRandomColor(10),
+                title: {
+                    text: conf.title,
+                    x: 'center',
+                    textStyle: {
+                        color: '#ccc'
+                    }
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+
+                visualMap: {
+                    show: false,
+                    min: 80,
+                    max: 600,
+                    inRange: {
+                        colorLightness: [0, 1]
+                    }
+                },
+                series: [{
+                    name: conf.title,
+                    type: 'pie',
+                    radius: [25 , 130],
+                    center: ['50%', '50%'],
+                    data: data,
+                    label: {
+                        normal: {
+                            textStyle: {
+                                color: 'rgba(255, 255, 255, 0.6)'
+                            }
+                        }
+                    },
+                    labelLine: {
+                        normal: {
+                            lineStyle: {
+                                color: 'rgba(255, 255, 255, 0.3)'
+                            },
+                            smooth: 0.2,
+                            length: 5,
+                            length2: 5
+                        }
+                    },
+                    itemStyle: {
+                        normal: {
+                            shadowBlur: 200,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    animationType: 'scale',
+                    animationEasing: 'elasticOut',
+                    animationDelay: function (idx) {
+                        return Math.random() * 200;
+                    }
+                }]
+            });
+        }
+
     };
+
 
     /**
      * 校验器
      */
     _Z. Checker = {
         getType: function () {
-            return Object.prototype.toString.call(arguments[0]).slice(8, -1).toLowerCase();
+            return Object.prototype.toString.call(arguments[0] || undef).slice(8, -1).toLowerCase();
         },
 
         isPlainObject: function ( obj ) {
@@ -599,25 +640,21 @@
         },
 
         isEmpty: function( obj ) {
+            var is = true;
+            if ( !obj ) return is;
             var type = _Z.Checker.getType( obj );
             switch ( type ) {
-                case 'null':
-                    return null;
-                case 'undefined':
-                    return undef;
                 case 'object':
-                    var p, has = false;
+                    var p;
                     for ( p in obj ) {
-                        has = true;
+                        is = !is;
                         break;
                     }
-                    return !has;
+                    return is;
                 case 'array':
                     return obj.length === 0;
-                case 'string':
-                    return obj === '';
                 default:
-                    return false;
+                    return;
             }
         },
 
@@ -645,7 +682,7 @@
             }
 
             $input.each(function () {
-                if ( _Z.StringTool.isStringEmpty(this.value) ) {
+                if ( !this.value ) {
                     empty = true;
                     return false;
                 }
@@ -677,9 +714,7 @@
         },
 
         isEmptyInputForm: function (form, btn){
-
             if ( !form ||form.length !== 1 ) return null;
-
             var empty = false;
 
             form.find('input').each(function () {
@@ -696,8 +731,8 @@
         },
 
         hasProperty: function(obj, prop){
-            if( typeof (obj) !== 'object' )
-                return false;
+            if( ! this.isPlainObject (obj) )
+                throw 'arguments error';
             return obj.hasOwnProperty(prop);
         },
 
@@ -734,23 +769,9 @@
             return checkPostCode.test(str)
         },
 
-        isPlateNo: function(str, input, btn) {
-            var reg5 = /^[\u4e00-\u9fa5]{1}[A-Z]{1}[A-Z_0-9]{5}$/;
-            var reg6 = /^[\u4e00-\u9fa5]{1}[A-Z]{1}[A-Z_0-9]{6}$/;
-            if ( !input ) {
-                return reg5.test(str) || reg6.test(str)
-            }
-
-            _Z.Format.validFormat( ( reg5.test(str) || reg6.test(str) ), input, btn );
-        },
-
         isCertNum: function(str) {
             var reg = new RegExp(/(^\d{15}$)|(^\d{17}([0-9]|X)$)/);
             return reg.test(str);
-        },
-
-        isNotCertNum: function(str) {
-            return !_Z.Checker.isCertNum(str);
         },
 
         isMobile_17: function (str, input, btn) {
@@ -761,6 +782,10 @@
                 return test;
             }
             _Z.Format.validFormat(test, input, btn);
+        },
+
+        log: function (data) {
+            console.log(data);
         }
 
     };
@@ -778,6 +803,14 @@
             if ( !win[ k ] )
                 win[ k ] = v;
             return v;
+        },
+
+        setSession: function (json, name) {
+            sessionStorage[name] = JSON.stringify(json);
+        },
+
+        getSession: function (name) {
+            return JSON.parse( sessionStorage[name] );
         }
 
     };
@@ -788,9 +821,72 @@
     // it is strongly suggested not to put any given projects options data
     // in this object by changing the source code
     // you can mount any static data in this object in your project files instead of putting in here
-    _Z. innerStatic = {};
+    _Z. innerStatic = {
+        error: {
+            args: 'arguments error'
+        }
+    };
 
-    _Z. static = { };
+    _Z. static = {
+
+        method: {
+            LACBCN: 'listAspClientByClientName',
+            LAPBPN: 'listAspProjectByProjectName',
+
+            LATCPW: 'listAccumulativeTotalClientProjectWorkday', // ymd week
+            GICPW: 'getIncrementClientProjectWorday', // ymd week
+
+            LPSD: 'listProjectStatusDistribution', //y-m-d 6-month
+            LPTD: 'listProjectTypeDistribution', // y-m-d 6-month
+
+            LCRC: 'listClientResourceCollection', // y-m-d 6-month
+            LGA: 'listGaapAccumulate', // ymd week
+            LGAP: 'listGaapAccumulateProject', // ymd week
+
+            LPCBE: 'listProjectCollectionByEmployee', // y-m-d 6-month
+            LPCBC: 'listProjectCollectionByClient', // 同上
+            LECBP: 'listEmpCollectionByProject', // 同上
+        },
+
+        getRequestDate: function (type, range) {
+            var now = _Z. Format.getDateFromNow('d1'),
+                week = _Z. Format.getDateFromNow('d7'),
+                halfYear = _Z. Format.getDateFromNow('m6'),
+
+                weekRange = week + ' - ' + now,
+                halfYearRange = halfYear + ' - ' + now;
+
+            switch ( type ) {
+                case 'ymd':
+                    return this.getTimeParams ( weekRange, type );
+                case 'y-m-d':
+                    return this.getTimeParams ( halfYearRange, type );
+                default:
+                    return this.getTimeParams ( halfYearRange, 'y-m-d' )
+            }
+        },
+
+        getTimeParams: function ( time, type ) {
+            var timeArray = time.split(' - '),
+                s = timeArray[0],
+                e = timeArray[1];
+
+            if (!type || type === 'y-m-d') {
+                s += ' 00:00:00';
+                e += ' 00:00:00';
+            }
+            else if (type === 'ymd') {
+                s = s.replace(/-/g, '');
+                e = e.replace(/-/g, '');
+            }
+
+            return {
+                start_time: s,
+                end_time: e
+            }
+        }
+
+    };
 
     var Z = {};
 
@@ -804,8 +900,14 @@
                 throw 'The key name \' ' + s + ' \' has been occupied!';
             }
 
-            // load the static data
+            // load the static data go straight
             if ( s === 'static' && _Z.dataTool.length( value ) !== 0 ) {
+                Z[ s ] = value;
+                continue;
+            }
+
+            // load the eChart functions go straight
+            if ( s === 'eChart' && _Z.dataTool.length( value ) !== 0 ) {
                 Z[ s ] = value;
                 continue;
             }

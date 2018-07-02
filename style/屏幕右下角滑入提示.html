@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        @keyframes modal {
+            from {
+                transform: translateX(380px);
+            }
+        }
+        .panda-api {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 360px;
+            border-radius: 6px;
+            height: 100px;
+            line-height: 20px;
+            padding: 10px;
+            box-sizing: border-box;
+            background-image: linear-gradient(270deg, #2DC8F3 0, #1497E2 100%);
+            animation-name: fadeIn;
+            z-index: 3000;
+            text-align: left;
+            font-size: 17px;
+            color: #FFF;
+            animation: modal 1.5s 1 alternate;
+        }
+        .panda-api a {
+            color: #FFF
+        }
+
+    </style>
+</head>
+<body>
+<div class="panda-api" style="display: block;">
+    <div class="panda-api-inner">
+        <a href="https://flatuicolors.com/" target="_blank" >配色卡</a>
+    </div>
+</div>
+<script>
+
+    function Yu () {
+        console.log(arguments[arguments.length-1])
+        var i,
+            param = '',
+            fnStr = '!function fun';
+
+        for ( i = 0; i < arguments.length - 1; i++ ) {
+            param += arguments[i] + ','
+        }
+        param = param.substring(0, param.length - 1);
+
+        fnStr += '(' + param +'){' + arguments[arguments.length-1] + '}()'
+
+        console.log(fnStr)
+
+        return eval( fnStr );
+    }
+
+    var fun = Yu('a','b','alert(a+b)');
+
+    // console.log(fun)
+
+
+
+
+
+</script>
+</body>
+</html>
