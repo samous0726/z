@@ -2,7 +2,7 @@
 new Promise((resolve, reject) => {
     setTimeout(function () {
         resolve('promise result');
-    }, 1500)
+    }, 500)
 }).then((res) => {
     console.log(res)
 })
@@ -21,14 +21,14 @@ class Promise_ {
             if (this.status === 'pending') {
                 this.value = value;
                 this.status = 'fulfilled';
-                this.resolveCallbacks && this.resolveCallbacks()
+                this.resolveCallbacks && this.resolveCallbacks(value)
             }
         };
         const reject = (reason) => {
             if (this.status === 'pending') {
                 this.reason = reason;
                 this.status = 'rejected';
-                this.rejectCallbacks && this.rejectCallbacks()
+                this.rejectCallbacks && this.rejectCallbacks(reason)
             }
         };
         try {
