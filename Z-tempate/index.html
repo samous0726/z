@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+    <template id="template">
+        <nb>if ( data.code === 200 ) { </nb>
+        <div>code: 200</div>
+        <nb>}</nb>
+        <nb>for(var i = 0; i < data.data.length; i++) {</nb>
+            <div><nb>=data.data[i].busResultCode.code</nb></div>
+            <div><nb>=data.data[i].busResultCode.msg</nb></div>
+            <div><nb>=data.data[i].busResultCode.success</nb></div>
+        <nb>}</nb>
+    </template>
+
+    <template id="table_data">
+        <tbl class="data_table">
+            <the>
+                <trow>
+                    <tcol width="3%"><input type="checkbox" class="select_all" /></tcol>
+                    <tcol width="6%">消息<br/>单号</tcol>
+                    <tcol width="13%">群名称</tcol>
+                    <tcol width="20.5%">会话内容</tcol>
+                    <tcol width="8%">会话人</tcol>
+                    <tcol width="8%">责任人</tcol>
+                    <tcol width="6%" class="longTime">报警<br/>次数<i class="desc"></i></tcol>
+                    <tcol width="9%" class="lastMessageTime">会话时间<i class="desc"></i></tcol>
+                    <tcol width="9%" class="checkTime">命中时间<i class="desc"></i></tcol>
+                    <tcol width="6%" class="longTime">超时<br/>时长<i class="desc"></i></tcol>
+                    <tcol width="6%">处理<br/>方式</tcol>
+                    <tcol width="5.5%">操作</tcol>#* 12 *#
+                </trow>
+            </the>
+            <tbo>
+                <nb>var i; for ( i = 0; i < data.length; i++ ){</nb>
+                <trow>
+                    <tcol><input type="checkbox" class="icheckbox_minimal" data-mid="<nb>=data[i].mid</nb>" /></tcol>
+                    <tcol><a href="<nb>=data[i].reviewUrl</nb>" target="_blank" ><nb>=data[i].mid</nb></a></tcol>
+                    <tcol class="ellipsis"><nb>=data[i].groupName</nb></tcol>
+                    <tcol class="ellipsis"><nb>=data[i].lastContext</nb></tcol>
+                    <tcol class="ellipsis"><nb>=data[i].userName</nb></tcol>
+                    <tcol class="ellipsis">
+                        <nb>if(Z.getType( data[i].relList ) === 'array' && data[i].relList.length > 0 ) { </nb>
+                        <nb>var j; for( j = 0; j < data[i].relList.length; j++ ){</nb>
+                        <nb>=data[i].relList[j].respNickName</nb>&nbsp;
+                        <nb>}</nb>
+                        <nb>}</nb>
+                    </tcol>
+                    <tcol><nb>=~~(data[i].longTime / 10)</nb></tcol>
+                    <tcol><nb>=Z.dateFormat( data[i].lastMessageTime )</nb></tcol>
+                    <tcol><nb>=Z.dateFormat( data[i].checkTime )</nb></tcol>
+                    <tcol><nb>=data[i].longTime</nb>分钟</tcol>
+                    <tcol class="<nb>=data[i].processType == 0 ? 'not_deal' : ''</nb> td_deal_type" data-mid="<nb>=data[i].mid</nb>"><nb>=Z.static.dealType[data[i].processType]</nb></tcol>
+                    <tcol><a class="deal single_deal" data-mid="<nb>=data[i].mid</nb>">处理</a></tcol>
+                </trow>
+                <nb>}</nb>
+            </tbo>
+        </tbl>
+    </template>
+
+</body>
+<script src="../lib/jquery-3.2.1.js"></script>
+<script src="Z.js"></script>
+<script>
+
+    var data = {
+        code: 200,
+        data: [
+            {
+                busResultCode: {
+                    code: 0,
+                    msg: "success!",
+                    success: true
+                },
+                value: "6425E951-6547-48D3-9D3E-70EB6DD35187",
+                success: true
+            }
+        ],
+        info: "成功处理",
+        privilege: null,
+        success: true,
+        total: 1,
+        sourceSite: "cn",
+        dataFrom: "cn",
+        availableSites: null
+    };
+
+    $('#template').after( Z.TEEval( $('#template').html(), data ) )
+
+    $('#template').after( Z.TEFinal( $('#template').html(), data ) )
+
+    var html = $('#table_data').html()
+        .replace(/<tbl/g,'<table').replace(/<\/tbl>/g,'</table>')
+        .replace(/<the/g,'<thead').replace(/<\/the>/g,'</thead>')
+        .replace(/<tbo/g,'<tbody').replace(/<\/tbo>/g,'</tbody>')
+        .replace(/<trow/g,'<tr').replace(/<\/trow>/g,'</tr>')
+        .replace(/<tcol/g,'<td').replace(/<\/tcol>/g,'</td>');
+
+    $('#table_container').html( Z.TEFinal( html, data || {} ) );
+
+</script>
+</html>

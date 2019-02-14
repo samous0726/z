@@ -72,6 +72,38 @@
             fn += ';return T; })(); ';
             fn += '\n //@ sourceURL=TEEval.js';
             return data ? eval(fn) : fn;
+        },
+
+        TEFinal: function(tpl, data){
+            var fn =  function(d) {
+                return ( new Function('data', fn.$) ).call(d, d);
+            };
+            tpl = tpl.replace(/^\s+|\s+$/gm, '').replace(/\r\n/g, '').replace(/\n/g, '').replace(/\r/g, '').replace(/(&lt;)/g, '<').replace(/(&amp;)/g, '&').replace(/(&gt;)/g, '>');
+            if( !fn.$ ) {
+                var t, tpls = tpl.split('<nb>');
+                fn.$ = "var $reg = RegExp(/null|undefined/i); var T=''";
+                for( t in tpls ) {
+                    var p = tpls[t].split('</nb>');
+                    if ( t !== '0' ) {
+                        fn.$ += '=' === p[0].charAt(0)
+                            ? '+($reg.test(typeof(' + p[0].substr(1) + ')) ? \'\' : ' + p[0].substr(1) + ')'
+                            : ';' + p[0] + 'T=T';
+                    }
+                    fn.$ += "+'" + p[ p.length - 1 ] + "'";
+                }
+                fn.$ += ";return T;";
+                fn.$ += '\n //@ sourceURL=TEFinal.js';
+            }
+            return data ? fn(data) : fn;
+        },
+
+        xorDecode: function (str, key) {
+            str = decodeURIComponent(str);
+            var i = 0, l = str.length, result = '';
+            for ( ; i < l; i++ ) {
+                result += String.fromCharCode( str.charCodeAt(i) ^ key.charCodeAt( i % key.length ) );
+            }
+            return result;
         }
 
     };
@@ -342,20 +374,27 @@
         getMostElementInArray: function (arr) {
             if ( !arr.length ) return;
             var res = {};
+
+            var i = 0,
+                len = arr.length;
+
             // 遍历数组
-            for ( var i = 0, l = arr.length; i < l; i++ ) {
-                if (!res[arr[i]]) {
-                    res[arr[i]] = 1
+            for ( ; i < len; i++ ) {
+                if ( !res[ arr[i] ] ) {
+                    res[ arr[i] ] = 1
                 } else {
-                    res[arr[i]]++
+                    res[ arr[i] ]++
                 }
             }
             // 遍历 res
             var keys = Object.keys(res),
                 maxNum = 0,
-                maxEle;
+                maxEle,
+                len = keys.length;
 
-            for ( var i = 0, l = keys.length; i < l; i++ ) {
+            i = 0;
+
+            for ( ; i < len; i++ ) {
                 if ( res[keys[i]] > maxNum ) {
                     maxNum = res[keys[i]]
                     maxEle = keys[i]
@@ -368,14 +407,16 @@
         },
 
         getDiffElementsFromOneToAnotherArray: function (target, from) {
-            var i, j,
+            var i = 0, j = 0,
+                fl = from.length,
+                tl = target.length,
                 tempArray1 = [],
                 result = [];
             if ( _Z. Checker. isEmpty( from ) ) return target;
-            for ( i = 0; i < from.length; i++ ) {
+            for ( ; i < fl; i++ ) {
                 tempArray1[ from[i] ] = true;
             }
-            for ( j = 0; j < target.length; j++ ) {
+            for ( ; j < tl; j++ ) {
                 if( !tempArray1[ target[j] ] ) {
                     result.push( target[j] );
                 }
@@ -701,6 +742,20 @@
             return obj.hasOwnProperty(prop);
         },
 
+        isJSON: function (str) {
+            if (typeof str !== 'string') return !1;
+            try {
+                var obj = JSON.parse(str);
+                if (typeof obj == 'object' && !this.isEmpty(obj)) {
+                    return obj;
+                } else {
+                    return !1;
+                }
+            } catch (e) {
+                return !1;
+            }
+        },
+
         isNumber: function(str){
             var num = Number(str);
             if(num === NaN){
@@ -761,6 +816,10 @@
                 return test;
             }
             _Z.Format.validFormat(test, input, btn);
+        },
+
+        log: function (data) {
+            console.log(data);
         }
 
     };
@@ -782,6 +841,62 @@
 
     };
 
+    _Z. navigator = {
+        getBrowser: function () {
+            var nav = {},
+                agent = navigator.userAgent.toLowerCase(),
+                core = ['opera', 'firefox', 'chrome', 'safari', ['compatible', 'msie'], 'trident'];
+
+            $.each(core, function () {
+                var type = _Z.Checker.getType(this)
+                if (type === 'string' && agent.indexOf(this) > -1) {
+                    nav.name = this;
+                    return false;
+                } else if (
+                    type === 'array'
+                    && agent.indexOf(this[0]) > -1
+                    && agent.indexOf(this[1]) > -1
+                    && agent.indexOf('opera') < 0
+                ) {
+                    nav.name = 'ie';
+                    return false;
+                }
+            });
+
+            nav.version = (nav.name === 'ie')
+                ? agent.match(/msie ([\d.]+)/)[1]
+                : (nav.name == 'firefox')
+                    ? agent.match(/firefox\/([\d.]+)/)[1]
+                    : (nav.name == 'chrome')
+                        ? agent.match(/chrome\/([\d.]+)/)[1]
+                        : (nav.name == 'opera')
+                            ? agent.match(/opera.([\d.]+)/)[1]
+                            : (nav.name == 'safari')
+                                ? agent.match(/version\/([\d.]+)/)[1]
+                                : '0';
+
+            nav.shell = (agent.indexOf('360ee') > -1)
+                ? '360极速浏览器 360ee'
+                : (agent.indexOf('360se') > -1)
+                    ? '360安全浏览器 360se'
+                    : (agent.indexOf('se') > -1)
+                        ? '搜狗浏览器 se'
+                        : (agent.indexOf('aoyou') > -1)
+                            ? '遨游浏览器 aoyou'
+                            : (agent.indexOf('theworld') > -1)
+                                ? '世界之窗浏览器 theworld'
+                                : (agent.indexOf('worldchrome') > -1)
+                                    ? '世界之窗极速浏览器 worldchrome'
+                                    : (agent.indexOf('greenbrowser') > -1)
+                                        ? '绿色浏览器 greenbrowser'
+                                        : (agent.indexOf('qqbrowser') > -1)
+                                            ? 'QQ浏览器 qqbrowser'
+                                            : (agent.indexOf('baidu') > -1)
+                                                ? '百度浏览器 baidu'
+                                                : nav.name;
+            return nav;
+        }
+    };
 
     // this innerStatic data should be used only the library internally.
     // like any frame configs, initialized options inside the file.
@@ -790,12 +905,9 @@
     // you can mount any static data in this object in your project files instead of putting in here
     _Z. innerStatic = {};
 
-    _Z. static = { };
-
-    var Z = {};
 
     // conform all the child nodes of child nodes to child nodes;
-    _Z. extend = function () {
+    _Z. extend = function ( Z ) {
         var s, vType;
 
         for ( s in this ) {
@@ -804,8 +916,8 @@
                 throw 'The key name \' ' + s + ' \' has been occupied!';
             }
 
-            // load the static data
-            if ( s === 'static' && _Z.dataTool.length( value ) !== 0 ) {
+            // load the eChart functions go straight
+            if ( s === 'eChart' && _Z.dataTool.length( value ) !== 0 ) {
                 Z[ s ] = value;
                 continue;
             }
@@ -816,14 +928,19 @@
                     Z[ s ] = value;
                     break;
                 case 'object':
-                    _Z.extend.call( value );
+                    _Z.extend.call( value, Z );
                     break;
                 default:
             }
         }
     };
 
-    _Z.extend.call( _Z );
+
+    var Z = {
+        static : {}
+    };
+
+    _Z.extend.call( _Z, Z );
 
     win .Z  =  Z;
 
