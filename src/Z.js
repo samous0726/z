@@ -2,21 +2,29 @@
  *
  * < version 2.6.30 >
  *
- * Copyright© Zhang zheng
+ * Copyright© Samous Chang
  *
- * Composed by Zhang zheng ( Samous Zhang )
+ * Composed by Samous Chang
  *
  * create date: 2017/12/06
  *
  * version update rules: update the big version every year but also update the little version in one year
  *
  */
-( function (win, $, undef) {
+(function (global, $, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined'
+        ? module.exports = factory(global, $)
+        : typeof define === 'function' && define.amd
+            ? define(factory.bind(null, global, $))
+            : factory(global, $)
+})(
+typeof window !== "undefined" ? window : this,
+typeof jQuery !== 'undefined' ? jQuery : undefined,
+function (win, $, undef) {
 
     "use strict";
 
-    if (typeof $ !== 'function')
-
+    if (typeof $ !== 'function' && !$.jquery)
         throw new Error( 'jQuery is not found, Z.js need jQuery!' );
 
     // this is a inner object for creating the library and mounting functions
@@ -55,24 +63,6 @@
     };
 
     _Z. fn = {
-        // TEEval template engine
-        TEEval: function (tpl, data) {
-            tpl = tpl.replace(/^\s+|\s+$/gm, '').replace(/\r\n/g, '').replace(/\n/g, '').replace(/\r/g, '').replace(/(&lt;)/g, '<').replace(/(&amp;)/g, '&').replace(/(&gt;)/g, '>');
-            var t, fn = '(function(){ var $reg = RegExp(/null|undefined/i);var T = \'\'',
-                tpls = tpl.split('<nb>');
-            for ( t in tpls ) {
-                var p = tpls[t].split('</nb>');
-                if (t !== '0') {
-                    fn += '=' === p[0].charAt(0)
-                        ? '+($reg.test(typeof(' + p[0].substr(1) + ')) ? \'\' : ' + p[0].substr(1) + ')'
-                        : ';' + p[0] + 'T=T';
-                }
-                fn += '+\'' + p[ p.length - 1 ] + '\'';
-            }
-            fn += ';return T; })(); ';
-            fn += '\n //@ sourceURL=TEEval.js';
-            return data ? eval(fn) : fn;
-        },
 
         TEFinal: function(tpl, data){
             var fn =  function(d) {
@@ -331,7 +321,6 @@
         }
     });
 
-
     // 对Date的扩展，将 Date 转化为指定格式的String
     // 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
     // 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
@@ -354,8 +343,6 @@
             if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
         return fmt;
     };
-
-
 
     _Z. dataTool = {
         length: function ( obj ) {
@@ -442,33 +429,33 @@
         },
 
         formGetData: function (form, param) {
-           var request = {};
-           if ( !form ) return request;
+            var request = {};
+            if ( !form ) return request;
 
-           var _input = form.find('input') || [],
-               k, val, name, i = 0;
-           for ( ; i < _input.length; i++ ) {
-               name = _input[i].name;
-               val = _input[i].value;
-               if ( name && val ) {
-                   request[ name ] = val;
-               }
-           }
-           if( param && typeof param === 'object') {
-               for ( k in param ) {
-                   request[k] = param[k];
-               }
-           }
-           if( param && $(param).length === 1 ) {
-               var __form = $(param),
-                   __input = __form.find('input') || [];
+            var _input = form.find('input') || [],
+                k, val, name, i = 0;
+            for ( ; i < _input.length; i++ ) {
+                name = _input[i].name;
+                val = _input[i].value;
+                if ( name && val ) {
+                    request[ name ] = val;
+                }
+            }
+            if( param && typeof param === 'object') {
+                for ( k in param ) {
+                    request[k] = param[k];
+                }
+            }
+            if( param && $(param).length === 1 ) {
+                var __form = $(param),
+                    __input = __form.find('input') || [];
 
-               var j = 0;
-               for ( ; j < __input.length; j ++) {
-                   request[__input[j].name] = __input[j].value;
-               }
-           }
-           return request;
+                var j = 0;
+                for ( ; j < __input.length; j ++) {
+                    request[__input[j].name] = __input[j].value;
+                }
+            }
+            return request;
         },
 
     };
@@ -573,7 +560,7 @@
         },
 
         turnToHTML: function ( str ) {
-          return str.replace(/\r\n|\n|\r/g, '<br>').replace(/\s/g, '&nbsp;');
+            return str.replace(/\r\n|\n|\r/g, '<br>').replace(/\s/g, '&nbsp;');
         },
 
         cleanSpace: function ( str ) {
@@ -946,4 +933,4 @@
 
     return Z;
 
-})(window, typeof jQuery !== 'undefined' ? jQuery : undefined);
+})

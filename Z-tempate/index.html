@@ -66,7 +66,7 @@
 
 </body>
 <script src="../lib/jquery-3.2.1.js"></script>
-<script src="Z.js"></script>
+<script src="../src/Z.js"></script>
 <script>
 
     var data = {
@@ -90,8 +90,6 @@
         dataFrom: "cn",
         availableSites: null
     };
-
-    $('#template').after( Z.TEEval( $('#template').html(), data ) )
 
     $('#template').after( Z.TEFinal( $('#template').html(), data ) )
 
